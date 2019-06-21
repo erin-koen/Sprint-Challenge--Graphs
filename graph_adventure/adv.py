@@ -32,13 +32,15 @@ class Graph_Rooms:
         self.rooms[room] = set()
     def add_connection(self, room, direction):
         direction_dict = {direction: room}
-        self.rooms[room].add(direction_dict)
+        self.rooms[room].add_connection(direction_dict)
+        
     def bft(self, room):
         q = Queue()
         q.put([room])
         while q.empty() is False:
             path = q.get()
             v = path[-1]
+            # will need to do a little bit of debugging here wrt what's being passed
             for neighbor in self.rooms[v]:
                 if neighbor is not "?":
                     path_copy = list(path)
@@ -51,14 +53,38 @@ tracker = Graph_Rooms()
 
 # use player to travel through rooms and build graph
 player.currentRoom = 0
+
+# this isn't going to work - need another while loop. 
 while len(tracker.rooms)<len(roomGraph):
     # add current room to tracker
+    tracker.add_room(player.currentRoom)
+    traversalPath.append(player.currentRoom)
     # get available exits, add connections to tracker as '?'
+    exits = player.currentRoom.getExits()
+    # add all connections as questions marks
+    for e in exits:
+        tracker.add_connection('?', e)
+    
+    exit_indexed = len(exits)-1
+    # if no available exits, run BFT, follow path to get back to an undiscovered
+    if len(exits) == 0:
+        path_back = tracker.bft(player.currentRoom)
+        for direction in path_back:
+            player.travel(direction)
+            traversalPath.append(player.currentRoom)
+        # if this bft gets called, need to send it back to the top of the while loop somehow
     # choose one at random
+    direction = exits[random.randint(0,exit_indexed)]
+    # save current room as old room to update connection after move
+    old_room = player.currentRoom
+    # save the opposite direction to update the new room after the move
+    opposite_dir = opposite_direction(direction)
     # send player in that direction
-    # update old room connection in tracker
-    # update new room connection in tracker   
-
+    player.travel(direction)
+    # update connections
+    tracker.rooms[old_room].direction = player.currentRoom
+    tracker.rooms[player.currentRoom].opposite_dir = old_room
+    
         
 def opposite_direction(dir):
     if dir == 'e':
