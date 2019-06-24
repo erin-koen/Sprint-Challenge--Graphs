@@ -1,5 +1,6 @@
 # Sprint Challenge: Graphs
 
+
 For this Sprint Challenge, you will be traversing a map based on the adventure engine from Week 1 of `Intro to Python`.
 
 Good luck and have fun! :smile:
